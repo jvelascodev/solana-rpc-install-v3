@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # ============================================
-# Step 3: Download snapshot and start Solana RPC node
+# 步骤3: 下载快照 + 启动 Solana RPC 节点
 # ============================================
-# Prerequisite: Must have run 1-prepare.sh and 2-install-solana.sh, then reboot the system
+# 前置条件: 必须先运行 1-prepare.sh 和 2-install-solana.sh，并重启系统
 # ============================================
 
 SERVICE_NAME=${SERVICE_NAME:-sol}
@@ -14,164 +14,164 @@ SNAPSHOT=${SNAPSHOT:-/root/sol/snapshot}
 LOGFILE=/root/solana-rpc.log
 
 if [[ $EUID -ne 0 ]]; then
-  echo "[ERROR] Please run as root: sudo bash $0" >&2
+  echo "[ERROR] 请用 root 执行：sudo bash $0" >&2
   exit 1
 fi
 
 echo "============================================"
-echo "Step 3: Download snapshot and start node"
+echo "步骤 3: 下载快照并启动节点"
 echo "============================================"
 echo ""
 
-# Verify system optimizations are applied
-echo "==> 1) Verifying system optimizations..."
+# 验证优化已生效
+echo "==> 1) 验证系统优化已生效..."
 echo ""
 
-# Verify BBR congestion control
+# 验证 BBR
 bbr=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || echo "unknown")
 if [[ "$bbr" == "bbr" ]]; then
-  echo "  ✅ BBR congestion control: enabled"
+  echo "  ✅ BBR 拥塞控制: 已启用"
 else
-  echo "  ⚠️  BBR congestion control: not enabled (current: $bbr)"
+  echo "  ⚠️  BBR 拥塞控制: 未启用 (当前: $bbr)"
 fi
 
-# Verify TCP buffer size
+# 验证 TCP 缓冲区
 rmem=$(sysctl -n net.core.rmem_max 2>/dev/null || echo "0")
 if [[ "$rmem" == "536870912" ]]; then
-  echo "  ✅ TCP buffer: 512MB (max)"
+  echo "  ✅ TCP 缓冲区: 512MB (极限)"
 else
-  echo "  ⚠️  TCP buffer: not at max (current: $rmem, expected: 536870912)"
+  echo "  ⚠️  TCP 缓冲区: 未达到极限 (当前: $rmem, 期望: 536870912)"
 fi
 
-# Verify disk read-ahead settings
+# 验证磁盘预读
 for dev in /sys/block/nvme* /sys/block/sd*; do
   [[ -e "$dev" ]] || continue
   devname=$(basename "$dev")
   ra=$(cat "$dev/queue/read_ahead_kb" 2>/dev/null || echo "0")
   if [[ "$ra" == "32768" ]]; then
-    echo "  ✅ Disk read-ahead: 32MB ($devname)"
+    echo "  ✅ 磁盘预读: 32MB ($devname)"
   else
-    echo "  ⚠️  Disk read-ahead: not at max (current: ${ra}KB, expected: 32768KB)"
+    echo "  ⚠️  磁盘预读: 未达到极限 (当前: ${ra}KB, 期望: 32768KB)"
   fi
   break
 done
 
 echo ""
-echo "==> 2) Stopping existing service..."
+echo "==> 2) 停止现有服务..."
 systemctl stop $SERVICE_NAME 2>/dev/null || true
 sleep 2
-echo "  ✅ Service stopped"
+echo "  ✅ 服务已停止"
 
 echo ""
-echo "==> 3) Cleaning old data (preserving identity keys)..."
+echo "==> 3) 清理旧数据（保留身份密钥）..."
 rm -f "$LOGFILE" || true
 
-# Clean directories
+# 清理目录
 dirs=("$LEDGER" "$ACCOUNTS" "$SNAPSHOT")
 for dir in "${dirs[@]}"; do
   if [[ -d "$dir" ]]; then
-    echo "  - Cleaning directory: $dir"
+    echo "  - 清理目录: $dir"
     rm -rf "$dir"/* "$dir"/.[!.]* "$dir"/..?* || true
   else
-    echo "  - Creating directory: $dir"
+    echo "  - 创建目录: $dir"
     mkdir -p "$dir"
   fi
 done
-echo "  ✅ Old data cleaned"
+echo "  ✅ 旧数据已清理"
 
 echo ""
-echo "==> 4) Preparing snapshot download tool..."
+echo "==> 4) 准备快照下载工具..."
 cd /root
 
-# Install dependencies
-echo "  - Installing Python dependencies..."
+# 安装依赖
+echo "  - 安装 Python 依赖..."
 apt-get update -qq
 apt-get install -y python3-venv git >/dev/null 2>&1
 
-# Clone or update solana-snapshot-finder
+# 克隆或更新 solana-snapshot-finder
 if [[ ! -d "solana-snapshot-finder" ]]; then
-  echo "  - Cloning solana-snapshot-finder repository..."
+  echo "  - 克隆 solana-snapshot-finder 仓库..."
   git clone https://github.com/0xfnzero/solana-snapshot-finder >/dev/null 2>&1
 else
-  echo "  - Updating solana-snapshot-finder repository..."
+  echo "  - 更新 solana-snapshot-finder 仓库..."
   cd solana-snapshot-finder
   git pull >/dev/null 2>&1
   cd ..
 fi
 
-# Create virtual environment
+# 创建虚拟环境
 cd solana-snapshot-finder
 if [[ ! -d "venv" ]]; then
-  echo "  - Creating Python virtual environment..."
+  echo "  - 创建 Python 虚拟环境..."
   python3 -m venv venv
 fi
 
-echo "  - Installing Python packages..."
+echo "  - 安装 Python 模块..."
 source ./venv/bin/activate
 pip3 install --upgrade pip >/dev/null 2>&1
 pip3 install -r requirements.txt >/dev/null 2>&1
 
-echo "  ✅ Tool preparation complete"
+echo "  ✅ 工具准备完成"
 
 echo ""
-echo "==> 5) Downloading snapshot (1-3 hours, depending on network speed)..."
+echo "==> 5) 下载快照（1-3 小时，取决于网络速度）..."
 echo ""
-echo "  🚀 Expected download speed: 500MB - 2GB/s (optimised)"
+echo "  🚀 预期下载速度: 500MB - 2GB/s（极限优化）"
 echo ""
 
-# Run snapshot finder
+# 运行 snapshot finder
 python3 snapshot-finder.py --snapshot_path "$SNAPSHOT"
 
 echo ""
-echo "  ✅ Snapshot download completed"
+echo "  ✅ 快照下载完成"
 
 echo ""
-echo "==> 6) Starting Solana RPC node..."
+echo "==> 6) 启动 Solana RPC 节点..."
 systemctl start $SERVICE_NAME
 
-# Wait for service to start
+# 等待服务启动
 sleep 3
 
-# Check status
+# 检查状态
 if systemctl is-active --quiet $SERVICE_NAME; then
-  echo "  ✅ Node started"
+  echo "  ✅ 节点已启动"
 else
-  echo "  ❌ Node failed to start"
+  echo "  ❌ 节点启动失败"
   echo ""
-  echo "Check logs:"
+  echo "查看日志:"
   systemctl status $SERVICE_NAME --no-pager -l
   exit 1
 fi
 
 echo ""
 echo "============================================"
-echo "✅ Step 3 complete: Node successfully started!"
+echo "✅ 步骤 3 完成: 节点已成功启动!"
 echo "============================================"
 echo ""
-echo "📊 Node status:"
-echo "  - Service: running"
-echo "  - Snapshot: downloaded"
-echo "  - Estimated sync time: 30-60 minutes"
+echo "📊 节点状态:"
+echo "  - 服务: 运行中"
+echo "  - 快照: 已下载"
+echo "  - 预计同步时间: 30-60 分钟"
 echo ""
-echo "📋 Monitoring commands:"
+echo "📋 监控命令:"
 echo ""
-echo "  Real-time logs:"
+echo "  实时日志:"
 echo "    journalctl -u $SERVICE_NAME -f"
-echo "    or tail -f $LOGFILE"
+echo "    或 tail -f $LOGFILE"
 echo ""
-echo "  Performance monitoring:"
+echo "  性能监控:"
 echo "    bash /root/performance-monitor.sh snapshot"
 echo ""
-echo "  Health check:"
+echo "  健康检查:"
 echo "    /root/get_health.sh"
 echo ""
-echo "  Catch-up status:"
+echo "  追块状态:"
 echo "    /root/catchup.sh"
 echo ""
-echo "🎯 Key metrics:"
-echo "  - Memory peak should be < 110GB"
-echo "  - CPU usage < 70%"
-echo "  - Catch-up latency < 100 slots"
+echo "🎯 关键指标:"
+echo "  - 内存峰值应 < 110GB"
+echo "  - CPU 使用率 < 70%"
+echo "  - 追块延迟 < 100 slots"
 echo ""
-echo "✅ Done! RPC node is syncing blockchain data..."
+echo "✅ 完成! RPC 节点正在同步区块链数据..."
 echo ""
