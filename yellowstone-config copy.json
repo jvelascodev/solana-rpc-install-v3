@@ -24,7 +24,7 @@
         "filters": {
             "accounts": {
                 "max": 100,
-                "any": true,
+                "any": false,
                 "account_max": 100,
                 "account_reject": [
                     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -39,7 +39,7 @@
             },
             "transactions": {
                 "max": 100,
-                "any": true,
+                "any": false,
                 "account_include_max": 100,
                 "account_include_reject": [
                     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -49,7 +49,7 @@
             },
             "transactions_status": {
                 "max": 100,
-                "any": true,
+                "any": false,
                 "account_include_max": 100,
                 "account_include_reject": [
                     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -60,7 +60,7 @@
             "blocks": {
                 "max": 1,
                 "account_include_max": 100,
-                "account_include_any": true,
+                "account_include_any": false,
                 "account_include_reject": [
                     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
                 ],
