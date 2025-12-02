@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==================================================================
-# Add 32GB Swap for Low Memory Systems (<160GB)
+# Add 64GB Swap for Low Memory Systems (<160GB)
 # ==================================================================
 # Only adds swap if system RAM < 160GB
 # Recommended for 128GB systems running Tier 1 configuration
@@ -45,8 +45,8 @@ if [[ $EXISTING_SWAP -gt 0 ]]; then
 fi
 
 echo ""
-echo "==> Creating 32GB swapfile..."
-fallocate -l 32G /swapfile || dd if=/dev/zero of=/swapfile bs=1G count=32
+echo "==> Creating 64GB swapfile..."
+fallocate -l 64G /swapfile || dd if=/dev/zero of=/swapfile bs=1G count=64
 
 echo "==> Setting permissions..."
 chmod 600 /swapfile
@@ -85,11 +85,11 @@ fi
 
 echo ""
 echo "=================================================================="
-echo "✅ 32GB Swap Successfully Configured!"
+echo "✅ 64GB Swap Successfully Configured!"
 echo "=================================================================="
 echo "Physical RAM:  ${TOTAL_MEM_GB}GB"
-echo "Swap Space:    32GB"
-echo "Total Available: $((TOTAL_MEM_GB + 32))GB"
+echo "Swap Space:    64GB"
+echo "Total Available: $((TOTAL_MEM_GB + 64))GB"
 echo ""
 echo "Swappiness: 10 (minimal swap usage - only when RAM is full)"
 echo "=================================================================="
