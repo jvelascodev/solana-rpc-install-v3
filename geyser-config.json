@@ -1,0 +1,13 @@
+{
+  "libpath": "./libyellowstone_grpc_geyser.so",
+  "grpc": {
+    "address": "0.0.0.0:10900",
+    "filters": {
+      "accounts": {},
+      "slots": {},
+      "transactions": {},
+      "blocks": {},
+      "blocks_meta": {}
+    }
+  }
+}

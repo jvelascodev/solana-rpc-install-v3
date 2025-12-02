@@ -22,8 +22,8 @@ echo "=================================================================="
 
 # Select appropriate configuration based on memory
 if [[ $TOTAL_MEM_GB -lt 24 ]]; then
-  CONFIG_FILE="$SCRIPT_DIR/validator-128g.sh"
-  echo "Selected: TIER 1 (128GB) - Optimized Standard
+  CONFIG_FILE="$SCRIPT_DIR/validator-16g.sh"
+  echo "Selected: TIER 1 (16GB) - Optimized Standard"
   echo "✅ Full RPC features with conservative parameters"
 elif [[ $TOTAL_MEM_GB -lt 160 ]]; then
   CONFIG_FILE="$SCRIPT_DIR/validator-128g.sh"

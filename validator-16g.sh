@@ -23,7 +23,7 @@ echo "   ✅ Transaction History: ENABLED"
 echo "   📊 Full RPC features with slightly conservative parameters"
 echo "=================================================================="
 
-exec agave-validator \
+sudo /usr/local/solana/bin/agave-validator \
  --geyser-plugin-config /root/sol/bin/yellowstone-config.json \
  --ledger /root/sol/ledger \
  --accounts /root/sol/accounts \
@@ -60,7 +60,5 @@ exec agave-validator \
  --accounts-shrink-ratio 0.90 --accounts-index-bins 2048 \
  --block-production-method central-scheduler \
  --health-check-slot-distance 150 \
- --no-accounts-db-index-hashing \
- --disable-accounts-disk-index \
  --no-voting --allow-private-addr --bind-address 0.0.0.0 \
  --log-messages-bytes-limit 201326592
