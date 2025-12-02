@@ -22,10 +22,10 @@ Environment="RUST_BACKTRACE=1"
 # Prevent OOM killer from targeting this process
 OOMScoreAdjust=-900
 # Memory limits (auto-calculated based on system RAM)
-# Low memory systems (<160GB): Very loose limits to prevent crashes
-# High memory systems (>=160GB): Standard production limits
-MemoryHigh=120G
-MemoryMax=125G
+# 96GB systems: Loose limits to prevent crashes during sync with swap
+# Allows peak usage up to ~90GB during sync phase
+MemoryHigh=90G
+MemoryMax=95G
 # CPU affinity and scheduling
 Nice=-10
 IOSchedulingClass=realtime
